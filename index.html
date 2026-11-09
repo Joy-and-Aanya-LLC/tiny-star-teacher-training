@@ -176,6 +176,7 @@ td.t{font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:700}
 .bignum{font-family:var(--display);font-size:3rem;font-weight:600;color:var(--sky);font-variant-numeric:tabular-nums;line-height:1}
 .pill{display:inline-block;font-weight:700;padding:4px 12px;border-radius:99px;color:#fff}
 .pill.pass{background:var(--good)}.pill.fail{background:var(--bad)}
+.review{margin-top:18px;border-top:1px solid var(--mist);padding-top:12px}.review ol{padding-left:2.2em}.review li{margin:0 0 16px}.review p{margin:.25em 0}.review .yours{color:var(--bad);font-weight:600}.review .correct{color:var(--good);font-weight:700}
 .resultbox{font-family:ui-monospace,Menlo,monospace;font-size:.88rem;background:var(--paper);border:1px solid var(--mist);border-radius:10px;padding:12px;white-space:pre-wrap;margin-top:12px}
 dialog{border:0;border-radius:12px;padding:0;max-width:96vw;max-height:94vh;background:#000}
 dialog img{display:block;max-width:96vw;max-height:86vh}
@@ -222,7 +223,7 @@ const SHEET_URL="https://script.google.com/macros/s/AKfycbwEgCBwiSpZYHLw9rxSFTZ_
 function report(type,data){
   if(!SHEET_URL) return;
   const body=JSON.stringify(Object.assign({type,name:store.get("cName")||"",email:store.get("cEmail")||"",phone:store.get("cPhone")||"",city:store.get("cCity")||"",time:new Date().toISOString()},data||{}));
-  try{fetch(SHEET_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body});}catch(_){}
+  try{fetch(SHEET_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body}).catch(()=>{});}catch(_){}
 }
 const isRegistered=()=>store.get("regDone")==="1";
 function registerHTML(){
@@ -500,17 +501,17 @@ function wireExam(){
     if(miss.length){msg.textContent="Please answer every question. Still unanswered: "+miss.join(", ")+".";document.getElementById("q"+(miss[0]-1)).scrollIntoView({block:"center"});return;}
     msg.textContent=""; let score=0;
     QS.forEach((q,i)=>{const ok=ans[i]===q[2];if(ok)score++;form.querySelectorAll(`input[name="a${i}"]`).forEach(inp=>{const j=+inp.value,l=inp.parentElement;l.classList.remove("right","wrong");if(j===q[2])l.classList.add("right");else if(j===ans[i])l.classList.add("wrong");});const w=document.getElementById("why"+i);w.classList.remove("hidden");w.textContent=(ok?"Correct. ":"Not quite. ")+q[3];});
-    const pct=Math.round(score/QS.length*100),pass=score>=EXAM_PASS;
+    const missed=QS.map((q,i)=>i).filter(i=>ans[i]!==QS[i][2]);const pct=Math.round(score/QS.length*100),pass=score>=EXAM_PASS;
     const date=new Date().toLocaleDateString("en-US",{year:"numeric",month:"long",day:"numeric"});
     const code=rcode(n.value.trim().toLowerCase()+"|"+e.value.trim().toLowerCase()+"|"+score+"|"+date);
     if(pass){markDone("exam");}
     const summary0=`Tiny Star Teacher Training — Final Exam Result\nName: ${n.value.trim()}\nEmail: ${e.value.trim()}\nScore: ${score}/${QS.length} (${pct}%) — ${pass?"PASSED":"Not yet passed"}\nSections completed: ${LESSONS.filter(l=>isDone(l.id)).length}/${LESSONS.length}\nDate: ${date}\nResult code: ${code}`;const summary=summary0;if(pass)store.set("lastResult",summary0);store.set("cName",n.value.trim());store.set("cEmail",e.value.trim());report("exam",{score:score+"/"+QS.length,percent:pct,result:pass?"PASSED":"Not yet passed",sections:LESSONS.filter(l=>isDone(l.id)).length+"/"+LESSONS.length,code});
-    document.getElementById("resultBody").innerHTML=`<div class="scorecard"><div class="bignum">${score}/${QS.length}</div><div><span class="pill ${pass?"pass":"fail"}">${pass?"Passed":"Not yet passed"}</span><p style="margin:.5em 0 0">${pct}% · pass mark ${EXAM_PASS} correct (80%)</p></div></div>
+    document.getElementById("resultBody").innerHTML=`<div class="scorecard"><div class="bignum">${score}/${QS.length}</div><div><span class="pill ${pass?"pass":"fail"}">${pass?"Passed":"Not yet passed"}</span><p style="margin:.5em 0 0">${pct}% · pass mark ${EXAM_PASS} correct (80%)</p></div></div>${missed.length?`<div class="review"><h3>Review your wrong answers (${missed.length})</h3><ol>${missed.map(i=>`<li value="${i+1}"><p><b>${esc(QS[i][0])}</b></p><p class="yours">Your answer: ${ans[i]===null?"(no answer)":esc(QS[i][1][ans[i]])}</p><p class="correct">Correct answer: ${esc(QS[i][1][QS[i][2]])}</p><p class="note">${esc(QS[i][3])}</p><a href="#q${i}" data-jump="q${i}">See question ${i+1} →</a></li>`).join("")}</ol></div>`:`<p style="margin:12px 0 0"><b>Perfect score!</b> You answered every question correctly.</p>`}
      ${pass?`<div class="prose"><h3 style="margin-top:16px">Next step: your demo teaching</h3><p>Congratulations! Your last step is <b>Come to Our Classroom</b>: book your 30-minute teaching demo. <a href="#demo">Book my demo →</a></p><p><b>Prepare for your demo:</b> lead the Young Author Meditation and the four rules, teach the 3 Acts Method with your own sample story (with a lively Try, Try, Try), and guide the class through WHO and WHEN with small pieces of guidance.</p></div>`:`<div class="prose"><p style="margin-top:16px">Review the explanations under each question, revisit those lessons, and try again when you're ready.</p></div>`}
      <div class="resultbox">${esc(summary)}</div>
      <div class="row"><button class="btn" type="button" id="copyRes">Copy my result</button><a class="btn ghost" style="text-decoration:none" href="mailto:joy@thetinystar.com?subject=${encodeURIComponent("Demo Teaching Request – "+n.value.trim())}&body=${encodeURIComponent(summary)}">Open in my email app</a><button class="btn ghost" type="button" id="retake">Retake the exam</button></div>
      <p class="note" id="copyMsg" role="status">If the email button doesn't open your email app, copy the result and send it to joy@thetinystar.com.</p>`;
-    const blk=document.getElementById("resultBlock");blk.classList.remove("hidden");blk.focus();blk.scrollIntoView();
+    document.querySelectorAll("#resultBody [data-jump]").forEach(x=>x.onclick=ev=>{ev.preventDefault();document.getElementById(x.dataset.jump).scrollIntoView({behavior:"smooth",block:"center"});});const blk=document.getElementById("resultBlock");blk.classList.remove("hidden");blk.focus();blk.scrollIntoView();
     document.getElementById("copyRes").onclick=async()=>{const m=document.getElementById("copyMsg");try{await navigator.clipboard.writeText(summary);m.textContent="Copied. Paste it into an email to joy@thetinystar.com.";}catch(_){m.textContent="Copy isn't available here. Select the result text above and copy it.";}};
     document.getElementById("retake").onclick=()=>{form.reset();form.querySelectorAll(".opts label").forEach(l=>l.classList.remove("right","wrong"));form.querySelectorAll(".why").forEach(w=>w.classList.add("hidden"));blk.classList.add("hidden");window.scrollTo(0,0);};
     renderNav();
