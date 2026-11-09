@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tiny Star Teacher Training</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: a night-sky lesson rail beside a calm reading column; each lesson walks the same six numbered stations. */
+:root{
+  --ink:#1b2340; --paper:#f6f7fb; --card:#ffffff; --sky:#24306b; --star:#f2b632; --orange:#e9772e;
+  --mist:#e3e7f3; --muted:#5a6383; --good:#1f8a5b; --bad:#c2413b;
+  --display:"Fredoka","Trebuchet MS",system-ui,sans-serif; --body:"Nunito Sans","Segoe UI",system-ui,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ink:#e8ebf7;--paper:#0f1430;--card:#181f45;--sky:#c9d2ff;--star:#f5c04e;--orange:#f39a5c;--mist:#2a335f;--muted:#a3abcc;--good:#4cc28c;--bad:#ef7b74;color-scheme:dark}}
+:root[data-theme="dark"]{--ink:#e8ebf7;--paper:#0f1430;--card:#181f45;--sky:#c9d2ff;--star:#f5c04e;--orange:#f39a5c;--mist:#2a335f;--muted:#a3abcc;--good:#4cc28c;--bad:#ef7b74;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.6}
+a{color:var(--sky);text-underline-offset:3px}
+:focus-visible{outline:3px solid var(--star);outline-offset:2px}
+h1,h2,h3{font-family:var(--display);font-weight:600;line-height:1.2;text-wrap:balance;color:var(--sky);margin:0}
+h1{font-size:2rem}h2{font-size:1.4rem}h3{font-size:1.08rem}
+.app{display:grid;grid-template-columns:290px 1fr;min-height:100%}
+.rail{background:#1d2656;color:#eef0fb;padding:22px 18px;position:sticky;top:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column;gap:14px}
+.brand{display:flex;gap:10px;align-items:center}
+.brand b{font-family:var(--display);font-size:1.3rem;font-weight:600}
+.brand-sub{font-size:.85rem;color:#b9c0e6;margin:-8px 0 0}
+.meter{background:#2d3878;border-radius:99px;height:8px;overflow:hidden}
+.meter i{display:block;height:100%;background:var(--star);width:0;transition:width .3s}
+.meter-label{font-size:.82rem;color:#b9c0e6;margin-top:-8px}
+.steps{list-style:none;margin:0;padding:0;display:grid;gap:2px}
+.steps a{display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:center;padding:8px 10px;border-radius:10px;color:#eef0fb;text-decoration:none;font-size:.95rem}
+.steps a:hover{background:#2a3470}
+.steps a[aria-current="page"]{background:#323e86}
+.dot{width:26px;height:26px;border-radius:50%;border:2px solid #6f7bbd;display:grid;place-items:center;font-size:.78rem;font-weight:700;color:#b9c0e6}
+.done .dot{background:var(--star);border-color:var(--star);color:#1d2656}
+.coach{border:2px solid var(--star);border-radius:14px;padding:14px 16px;margin:12px 0;background:var(--paper)}
+.coach h3{margin-bottom:8px}
+.vlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px;max-height:330px;overflow:auto;padding:2px}
+.vopt{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--mist);border-radius:10px;background:var(--card);cursor:pointer}
+.vopt input{accent-color:var(--sky);width:18px;height:18px;flex:none}
+.vopt .vn{flex:1;min-width:0;line-height:1.25}
+.vopt .vn b{display:block;font-size:.95rem}
+.vopt .vn small{color:var(--muted);font-size:.8rem}
+.vopt.sel{border-color:var(--sky);box-shadow:inset 4px 0 0 var(--sky)}
+.vtag{font-size:.68rem;font-weight:700;background:var(--good);color:#fff;border-radius:99px;padding:1px 7px;margin-left:4px;vertical-align:1px}
+.speeds{display:flex;flex-wrap:wrap;gap:6px}
+.speeds button{font:inherit;font-size:.88rem;font-weight:700;padding:6px 12px;border-radius:99px;border:1px solid var(--mist);background:var(--card);color:var(--ink);cursor:pointer}
+.speeds button[aria-pressed="true"]{background:var(--sky);color:var(--paper);border-color:var(--sky)}
+.dl{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:8px 0 4px}
+details.tips summary{cursor:pointer;font-weight:700;font-size:.9rem;margin-top:10px}
+details.tips ul{font-size:.9rem;margin:.4em 0}
+.scanstep{display:grid;grid-template-columns:34px 1fr;gap:12px;margin:14px 0}
+.scanstep .num{background:var(--sky);width:30px;height:30px;font-size:.95rem}
+.sixparts{padding-left:1.3em}.sixparts li{margin:.35em 0}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.chip{font-size:.82rem;font-weight:700;padding:4px 10px;border-radius:99px;background:var(--mist);color:var(--ink)}
+.chip.gold{background:var(--star);color:#1d2656}
+.menulist{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.menulist a{display:grid;grid-template-columns:36px 1fr;gap:12px;align-items:start;padding:12px 14px;border:1px solid var(--mist);border-radius:12px;background:var(--paper);text-decoration:none;color:var(--ink)}
+.menulist a:hover{border-color:var(--sky)}
+.mnum{width:32px;height:32px;border-radius:50%;background:var(--sky);color:var(--paper);display:grid;place-items:center;font-weight:700;font-size:.85rem}
+.mbody{display:grid;gap:2px;min-width:0}
+.mtop{display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap}
+.mtop b{color:var(--sky)}
+.mtime{font-size:.85rem;font-weight:700;color:var(--orange);white-space:nowrap}
+.mdesc{font-size:.92rem;color:var(--muted)}
+.mdone{font-size:.78rem;font-weight:700;color:var(--good)}
+main{min-width:0;overflow-wrap:anywhere}
+.trkex{display:grid;gap:8px;margin:8px 0 12px}
+.trkrow{border:1px solid var(--mist);border-left:5px solid var(--good);border-radius:10px;padding:10px 12px;background:var(--paper)}
+.trkrow.need{border-left-color:var(--bad)}
+.trkhead{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.trkcell{font-weight:700;color:var(--sky);white-space:nowrap}
+.trkrow p{margin:2px 0 0;font-size:.93rem}
+.trkfu{font-weight:700;color:var(--bad)}
+.photocall{display:grid;grid-template-columns:minmax(140px,220px) 1fr;gap:16px;align-items:start;border:2px solid var(--star);border-radius:14px;padding:12px;margin:12px 0;background:var(--paper)}
+.photocall img{width:100%;border-radius:10px;display:block}
+@media (max-width:520px){.photocall{grid-template-columns:1fr}}
+.scanlist{padding-left:1.3em}.scanlist li{margin:.45em 0}
+.fullscript{margin-top:20px;border:1px solid var(--mist);border-top:6px solid var(--star);border-radius:12px;padding:16px 18px;background:var(--card)}
+.fullscript .fs-head{border-bottom:1px solid var(--mist);padding-bottom:10px;margin-bottom:6px}
+.fullscript h4{font-family:var(--display);font-weight:600;color:var(--orange);font-size:1rem;margin:14px 0 4px}
+.fullscript ol{margin:0;padding-left:1.6em}
+.fullscript li{padding:3px 0;border-bottom:1px dotted var(--mist)}
+.picker{display:none}
+main{padding:36px clamp(16px,5vw,60px) 80px;max-width:940px;width:100%}
+.eyebrow{font-size:.8rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 6px}
+.lede{font-size:1.08rem;color:var(--muted);max-width:65ch;margin:10px 0 0}
+.toc{display:flex;flex-direction:column;align-items:flex-start;gap:8px;margin-top:16px}
+.toc a{font-size:.85rem;font-weight:700;text-decoration:none;padding:5px 11px;border-radius:99px;background:var(--mist);color:var(--ink)}
+section.block{background:var(--card);border:1px solid var(--mist);border-radius:14px;padding:22px 24px;margin-top:20px;scroll-margin-top:16px}
+.sechead{display:flex;gap:12px;align-items:center;margin-bottom:12px}
+.num{flex:none;width:34px;height:34px;border-radius:50%;background:var(--orange);color:#fff;display:grid;place-items:center;font-family:var(--display);font-weight:600}
+.prose{max-width:70ch}
+.prose p{margin:.5em 0}
+.prose ul,.prose ol{padding-left:1.25em;margin:.4em 0}
+.note{font-size:.9rem;color:var(--muted)}
+.tablewrap{overflow-x:auto;margin:10px 0}
+table{border-collapse:collapse;width:100%;font-size:.95rem}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--mist);vertical-align:top}
+th{font-family:var(--display);font-weight:600;color:var(--sky)}
+td.t{font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:700}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;margin:6px 0 4px}
+.kv dt{font-weight:700}.kv dd{margin:0}
+.goalcard{border-radius:14px;padding:18px 20px;background:linear-gradient(135deg,#fff4d8,#ffe7cf);color:#1b2340;border:2px solid var(--star)}
+:root[data-theme="dark"] .goalcard{background:#2b2a4a;color:#f3eede}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .goalcard{background:#2b2a4a;color:#f3eede}}
+.goalcard .big{font-family:var(--display);font-size:1.45rem;font-weight:600;line-height:1.25}
+.goalcard ul{margin:10px 0 0;padding-left:1.2em}
+.totals{display:inline-block;margin-top:10px;font-weight:700;background:var(--orange);color:#fff;border-radius:99px;padding:4px 12px;font-size:.9rem}
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.gallery figure{margin:0;background:var(--paper);border:1px solid var(--mist);border-radius:12px;overflow:hidden}
+.gallery button{all:unset;cursor:zoom-in;display:block;width:100%}
+.gallery img{display:block;width:100%;height:auto;aspect-ratio:16/9;object-fit:contain;background:#fff}
+.gallery img.portrait{aspect-ratio:auto}
+.gallery figcaption{font-size:.86rem;padding:8px 10px;color:var(--muted)}
+.script{border:1px solid var(--mist);border-radius:12px;margin:12px 0;overflow:hidden}
+.script header{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 14px;background:var(--paper);flex-wrap:wrap}
+.script header h3{font-size:1rem}
+.script ol{list-style:none;margin:0;padding:6px 8px}
+.script li{display:grid;grid-template-columns:30px 1fr;gap:8px;align-items:start;padding:6px;border-radius:8px}
+.script li.on{background:#fff2cf}
+:root[data-theme="dark"] .script li.on{background:#3a3560}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .script li.on{background:#3a3560}}
+.say{all:unset;cursor:pointer;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--mist);color:var(--sky);font-size:.75rem}
+.say:hover{background:var(--star);color:#1d2656}
+.btn{font:inherit;font-weight:700;border:0;border-radius:10px;padding:9px 16px;cursor:pointer;background:var(--sky);color:var(--paper)}
+.btn.sm{padding:6px 12px;font-size:.88rem}
+.btn.gold{background:var(--star);color:#1d2656}
+.btn.ghost{background:transparent;color:var(--sky);border:2px solid var(--sky)}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:14px}
+.legend{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.legend span{font-size:.85rem;background:var(--paper);border:1px solid var(--mist);border-radius:8px;padding:4px 8px}
+.legend code{font-weight:700;font-family:inherit;color:var(--sky)}
+.practice label{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border:1px solid var(--mist);border-radius:10px;margin:6px 0;cursor:pointer;background:var(--paper)}
+.practice input{margin-top:5px;width:18px;height:18px;accent-color:var(--sky)}
+.practice label.right{border-color:var(--good);box-shadow:inset 4px 0 0 var(--good)}
+.practice label.wrong{border-color:var(--bad);box-shadow:inset 4px 0 0 var(--bad)}
+.email{border:1px solid var(--mist);border-radius:12px;margin:12px 0;overflow:hidden}
+.email header{padding:10px 14px;background:var(--paper);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center}
+.email header h3{font-size:1rem}
+.email .when{font-size:.85rem;color:var(--muted);padding:8px 14px 0}
+.email .subj{padding:6px 14px 0;font-weight:700}
+.email pre{white-space:pre-wrap;font-family:var(--body);font-size:.95rem;margin:0;padding:8px 14px 14px;max-height:340px;overflow:auto}
+.tag{font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:99px;background:var(--star);color:#1d2656}
+.tag.red{background:var(--bad);color:#fff}
+.res{list-style:none;padding:0;margin:0;display:grid;gap:8px}
+.res a{display:flex;gap:12px;align-items:center;padding:9px 14px;border:1px solid var(--mist);border-radius:10px;text-decoration:none;color:var(--ink);background:var(--paper)}
+.resbtn{all:unset;box-sizing:border-box;cursor:pointer;width:100%;display:flex;gap:12px;align-items:center;padding:9px 14px;border:1px solid var(--mist);border-radius:10px;color:var(--ink);background:var(--paper)}
+.resbtn:hover{border-color:var(--sky)}
+.resbtn .kind,.res .kind{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);min-width:56px}
+.checklist{list-style:none;padding:0;margin:0;display:grid;gap:4px}
+.checklist label{display:flex;gap:10px;align-items:flex-start;cursor:pointer;padding:6px 8px;border-radius:8px}
+.checklist input{margin-top:5px;width:18px;height:18px;accent-color:var(--sky)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:10px 0}
+.mini{background:var(--paper);border-radius:12px;padding:12px 14px}
+.mini h3{font-size:1rem;margin-bottom:4px}.mini p{margin:0;font-size:.94rem}
+.navrow{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:28px}
+.q{border-top:1px solid var(--mist);padding:14px 0}
+.q:first-of-type{border-top:0}
+.q p.stem{font-weight:700;margin:0 0 8px}
+.opts{display:grid;gap:6px}
+.opts label{display:flex;gap:10px;align-items:flex-start;padding:8px 12px;border:1px solid var(--mist);border-radius:10px;cursor:pointer;background:var(--paper)}
+.opts input{margin-top:5px;accent-color:var(--sky)}
+.opts label.right{border-color:var(--good);box-shadow:inset 4px 0 0 var(--good)}
+.opts label.wrong{border-color:var(--bad);box-shadow:inset 4px 0 0 var(--bad)}
+.why{font-size:.92rem;color:var(--muted);margin:8px 0 0}
+.field{display:grid;gap:4px;margin:8px 0}
+.field input{font:inherit;padding:10px 12px;border-radius:10px;border:1px solid var(--muted);background:var(--card);color:var(--ink)}
+.scorecard{display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:center}
+.bignum{font-family:var(--display);font-size:3rem;font-weight:600;color:var(--sky);font-variant-numeric:tabular-nums;line-height:1}
+.pill{display:inline-block;font-weight:700;padding:4px 12px;border-radius:99px;color:#fff}
+.pill.pass{background:var(--good)}.pill.fail{background:var(--bad)}
+.resultbox{font-family:ui-monospace,Menlo,monospace;font-size:.88rem;background:var(--paper);border:1px solid var(--mist);border-radius:10px;padding:12px;white-space:pre-wrap;margin-top:12px}
+dialog{border:0;border-radius:12px;padding:0;max-width:96vw;max-height:94vh;background:#000}
+dialog img{display:block;max-width:96vw;max-height:86vh}
+dialog p{margin:0;padding:8px 12px;color:#fff;font-size:.9rem;background:#111}
+dialog::backdrop{background:rgba(10,14,40,.8)}
+.hidden{display:none !important}
+@media (max-width:860px){
+  .app{grid-template-columns:1fr}
+  .rail{position:static;height:auto;padding:16px}
+  .steps{display:none}
+  .picker{display:block}
+  .picker select{width:100%;font:inherit;padding:10px;border-radius:10px;border:0;background:#323e86;color:#fff}
+  main{padding-top:22px}
+  h1{font-size:1.55rem}
+  section.block{padding:18px 14px}
+  .scorecard{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none !important;scroll-behavior:auto !important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="rail" aria-label="Course navigation">
+    <div class="brand"><svg width="30" height="30" viewBox="0 0 24 24" aria-hidden="true"><path fill="#f2b632" d="M12 1.8l2.9 6.6 7.1.6-5.4 4.7 1.7 7-6.3-3.8-6.3 3.8 1.7-7L2 9l7.1-.6z"/></svg><b>Tiny Star</b></div>
+    <p class="brand-sub">Teacher Training · Self-paced</p>
+    <div class="meter" aria-hidden="true"><i id="meterBar"></i></div>
+    <div class="meter-label" id="meterLabel"></div>
+    <ol class="steps" id="steps"></ol>
+    <div class="picker"><label for="pick" class="hidden">Go to lesson</label><select id="pick"></select></div>
+  </aside>
+  <main id="main" tabindex="-1"></main>
+</div>
+<dialog id="lb"><img id="lbImg" alt=""><p id="lbCap"></p></dialog>
+
+<script src="course.js"></script>
+<script>
+/* ---------- storage (best effort) ---------- */
+const mem={};
+const store={get(k){try{return localStorage.getItem("ts2-"+k);}catch(_){return mem[k]??null;}},set(k,v){mem[k]=v;try{localStorage.setItem("ts2-"+k,v);}catch(_){}}};
+const isDone=id=>store.get("done-"+id)==="1";
+const markDone=(id,v=true)=>{store.set("done-"+id,v?"1":"0");if(v){const pg=PAGES.find(x=>x.id===id);report("progress",{lesson:pg?pg.nav:id});}};
+/* ---------- registration + reporting to Tiny Star's Google Sheet ---------- */
+const SHEET_URL="";
+function report(type,data){
+  if(!SHEET_URL) return;
+  const body=JSON.stringify(Object.assign({type,name:store.get("cName")||"",email:store.get("cEmail")||"",phone:store.get("cPhone")||"",city:store.get("cCity")||"",time:new Date().toISOString()},data||{}));
+  try{fetch(SHEET_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body});}catch(_){}
+}
+const isRegistered=()=>store.get("regDone")==="1";
+function registerHTML(){
+  return `<p class="eyebrow">Welcome</p><h1>Tiny Star Teacher Training Course</h1><p class="lede">Please register before you start. We use your details to follow your progress and to invite you to teach a demo class.</p>
+  <section class="block"><h2>Register</h2><form id="regForm" class="prose" novalidate>
+   <div class="field"><label for="rName"><b>Full name</b></label><input id="rName" autocomplete="name" required></div>
+   <div class="field"><label for="rEmail"><b>Email</b></label><input id="rEmail" type="email" autocomplete="email" required></div>
+   <div class="field"><label for="rPhone"><b>Phone</b></label><input id="rPhone" type="tel" autocomplete="tel" required></div>
+   <div class="field"><label for="rCity"><b>City and state</b></label><input id="rCity" autocomplete="address-level2" required></div>
+   <div class="field"><label for="rFrom"><b>How did you hear about Tiny Star?</b> (optional)</label><input id="rFrom"></div>
+   <p class="note" id="regMsg" role="status"></p>
+   <div class="row"><button class="btn gold" type="submit">Register and start the course</button></div>
+  </form></section>`;
+}
+function wireRegister(){
+  const f=document.getElementById("regForm"); if(!f) return;
+  f.onsubmit=ev=>{ev.preventDefault();
+    const v=id=>document.getElementById(id).value.trim();
+    const name=v("rName"),email=v("rEmail"),phone=v("rPhone"),city=v("rCity"),from=v("rFrom");
+    const msg=document.getElementById("regMsg");
+    if(!name||!phone||!city){msg.textContent="Please fill in your name, phone, and city.";return;}
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){msg.textContent="Please enter a valid email address.";return;}
+    store.set("cName",name);store.set("cEmail",email);store.set("cPhone",phone);store.set("cCity",city);store.set("regDone","1");
+    report("register",{heardFrom:from});
+    location.hash="menu"; render(); window.scrollTo(0,0);
+  };
+}
+const esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+
+const PAGES=[{id:"menu",nav:"Course Menu",label:"≡"},...LESSONS.map(l=>({id:l.id,nav:l.nav,label:l.label})),{id:"exam",nav:"Final Exam & Score",label:"✓"},{id:"demo",nav:"Come to Our Classroom",label:"★"}];
+const STEPS=PAGES.filter(p=>p.id!=="menu");
+const TIME={before:7,"lesson-1":14,"lesson-2":14,"lesson-3":14,"lesson-4":14,"lesson-5":14,"lesson-6":14,"lesson-7":14,"lesson-8":14,exam:20};
+const fmt=m=>m>=60?(m%60?`${Math.floor(m/60)} h ${m%60} min`:`${m/60} h`):`${m} min`;
+function menuHTML(){
+  const rows=[...LESSONS.map(l=>[l.id,l.nav,l.objective,fmt(TIME[l.id])]),["exam","Final Exam & Score","25 questions about all eight lessons, the Classroom Tracker and parent emails. Pass with 80%.",fmt(TIME.exam)],["demo","Come to Our Classroom","Book and deliver a 30-minute teaching demo in a real Tiny Star classroom.","30 min, in person"]];
+  const total=Object.values(TIME).reduce((a,b)=>a+b,0);
+  return `<p class="eyebrow">Welcome</p><h1>Tiny Star Teacher Training Course</h1>
+  <p class="lede">Learn to teach “Write It, Draw It, Publish It!”, the 8-lesson program where children ages 6–12 write, illustrate and publish their own book. Study at your own pace, pass the exam, then show us your teaching in a Tiny Star classroom.</p>
+  <div class="meta"><span class="chip">Self-paced</span><span class="chip gold">About ${fmt(total)} online</span><span class="chip">+ 30-minute classroom demo</span></div>
+  <section class="block"><h2 style="margin-bottom:10px">Course menu</h2>
+   <ol class="menulist">${rows.map((r,i)=>`<li><a href="#${r[0]}"><span class="mnum">${PAGES.find(p=>p.id===r[0]).label}</span><span class="mbody"><span class="mtop"><b>${esc(r[1])}</b><span class="mtime">${esc(r[3])}</span></span><span class="mdesc">${esc(r[2])}</span>${isDone(r[0])?'<span class="mdone">✓ Done</span>':""}</span></a></li>`).join("")}</ol>
+   <p class="note">Times are typical. Take as long as you need, and come back to any lesson before you teach it.</p></section>
+  <section class="block"><h2 style="margin-bottom:10px">Every lesson has the same six parts</h2>
+   <ol class="sixparts"><li><b>Lesson Plan</b>: the objective and the minute-by-minute flow.</li><li><b>Week Goal</b>: how many pages every student should finish.</li><li><b>Classroom Slides</b>: the slides and sample book pages to show.</li><li><b>Say it in English</b>: listen to every script, practice aloud, and download it to print.</li><li><b>Fill the Classroom Tracker</b>: a worked example and a practice check.</li><li><b>Communicate with Parents</b>: the weekly email, plus a personal email, text and call script for students who missed the goal.</li></ol>
+   <div class="row"><a class="btn gold" style="text-decoration:none" href="#before">Start: Before the Program Starts →</a></div></section>`;
+}
+function demoHTML(){
+  const passed=isDone("exam"); const nm=store.get("cName")||"[Your full name]"; const em=store.get("cEmail")||"[Your email]"; const res=store.get("lastResult")||"[Paste your exam result, including the result code]";
+  const req=`Subject: Demo Teaching Appointment – ${nm}\n\nDear Tiny Star team,\n\nI have completed the Tiny Star Teacher Training and passed the final exam. I would like to book my 30-minute teaching demo in a Tiny Star classroom.\n\nName: ${nm}\nEmail: ${em}\nPhone: [Your phone]\n\nTimes I'm available (please list 3):\n1. [Day, date, time]\n2. [Day, date, time]\n3. [Day, date, time]\n\nMy exam result:\n${res}\n\nThank you!\n${nm}`;
+  COPY["demo-req"]=req.replace(/\\n/g,"\n");
+  return `<p class="eyebrow">Final step</p><h1>Come to Our Classroom</h1>
+  <p class="lede">Make an appointment to deliver your 30-minute teaching demo in a Tiny Star classroom, with real young authors.</p>
+  ${passed?`<div class="goalcard" style="margin-top:16px"><div class="big">You passed the exam! You're ready to book your demo.</div></div>`:`<div class="callout"><b>First, pass the final exam.</b> You can book your demo after you score 80% or higher. <a href="#exam">Go to the exam →</a></div>`}
+  <section class="block"><div class="sechead"><span class="num">1</span><h2>Book your appointment</h2></div><div class="prose">
+   <p>Email the Tiny Star Office at <b>joy@thetinystar.com</b> with three dates and times that work for you, and your exam result. We'll reply to confirm the school, classroom, date and time.</p>
+   <div class="email"><header><h3>Your appointment request</h3><button class="btn sm copy" type="button" data-copy="demo-req">Copy email</button></header><pre>${esc(COPY["demo-req"])}</pre></div>
+   <div class="row"><a class="btn gold" style="text-decoration:none" href="mailto:joy@thetinystar.com?subject=${encodeURIComponent("Demo Teaching Appointment – "+nm)}&body=${encodeURIComponent(COPY["demo-req"].split("\n").slice(2).join("\n"))}">Open in my email app</a></div>
+   <p class="note">If the button doesn't open your email app, copy the email and send it to joy@thetinystar.com. Questions? Call 857-832-8338.</p></div></section>
+  <section class="block"><div class="sechead"><span class="num">2</span><h2>Plan your 30-minute demo</h2></div><div class="prose">
+   <p>You'll teach the opening of Program Lesson 1 to a real class. Use the scripts from Lesson 1.</p>
+   <div class="tablewrap"><table><thead><tr><th>Time</th><th>What you teach</th></tr></thead><tbody>
+    <tr><td class="t">5 min</td><td>Welcome + Young Author Meditation</td></tr>
+    <tr><td class="t">3 min</td><td>The four classroom rules and stickers</td></tr>
+    <tr><td class="t">10 min</td><td>The 3 Acts Method, with your own sample story and a lively Try, Try, Try</td></tr>
+    <tr><td class="t">10 min</td><td>Guide the class through WHO and WHEN with small pieces of guidance</td></tr>
+    <tr><td class="t">2 min</td><td>Reflection and a warm goodbye</td></tr></tbody></table></div>
+   <div class="row"><a class="btn sm ghost" style="text-decoration:none" href="#lesson-1">Review Lesson 1 scripts</a></div></div></section>
+  <section class="block"><div class="sechead"><span class="num">3</span><h2>On the day</h2></div><div class="prose">
+   <ul><li>Arrive 15 minutes early. Dress professionally; we'll give you a Tiny Star apron.</li><li>Bring your sample story written as a Mini Book.</li><li>Your Tiny Star mentor will watch, help if needed, and talk with you afterwards.</li></ul>
+   <h3>What we look for</h3>
+   <ul><li>Warmth and high energy from the first minute</li><li>Clear English, using the Tiny Star scripts</li><li>Small pieces of guidance, one question at a time</li><li>Attention signals and Tiny Star teacher language, never shouting</li><li>Good timing: you finish each part on schedule</li></ul></div></section>`;
+}
+
+/* ---------- speech ---------- */
+const synth=("speechSynthesis" in window)?window.speechSynthesis:null;
+let voices=[],playing=null;
+const NOVELTY=/^(Albert|Bad News|Bahh|Bells|Boing|Bubbles|Cellos|Good News|Jester|Organ|Superstar|Trinoids|Whisper|Wobble|Zarvox|Fred|Junior|Kathy|Ralph|Eddy|Flo|Grandma|Grandpa|Reed|Rocko|Sandy|Shelley)\b/i;
+const ACCENT={US:"American",GB:"British",AU:"Australian",IN:"Indian",CA:"Canadian",IE:"Irish",ZA:"South African",NZ:"New Zealand",SG:"Singaporean",PH:"Filipino",NG:"Nigerian",HK:"Hong Kong",KE:"Kenyan",TZ:"Tanzanian",SCOTLAND:"Scottish"};
+const natural=v=>/(Enhanced|Premium|Natural|Neural|Online|Google|Siri)/i.test(v.name);
+const accentOf=v=>{const r=(v.lang.split(/[-_]/)[1]||"").toUpperCase();return ACCENT[r]||"English";};
+const RATES=[["0.7","Slow"],["0.8","Calm"],["0.9","Clear"],["1","Natural"],["1.1","Fast"]];
+let rate=store.get("rate")||"0.9";
+function loadVoices(){
+  if(!synth) return;
+  const all=synth.getVoices();
+  voices=all.filter(v=>/^en([-_]|$)/i.test(v.lang)&&!NOVELTY.test(v.name));
+  const seen=new Set(); voices=voices.filter(v=>{const k=v.name+v.lang; if(seen.has(k))return false; seen.add(k); return true;});
+  voices.sort((a,b)=>(natural(b)-natural(a))||((/US/i.test(b.lang))-(/US/i.test(a.lang)))||a.name.localeCompare(b.name));
+  document.querySelectorAll("[data-vlist]").forEach(fillVoiceList);
+}
+function currentVoice(){const us=voices.filter(v=>/^en[-_]US/i.test(v.lang));return us.find(v=>/^Samantha/i.test(v.name))||us.find(natural)||us[0]||voices.find(v=>/^en/i.test(v.lang))||null;}
+function fillVoiceList(box){
+  if(!synth){box.innerHTML='<p class="note">Audio isn\'t supported in this browser. Please open the course in Safari, Chrome or Edge.</p>';return;}
+  if(!voices.length){box.innerHTML='<p class="note">Loading voices… If nothing appears, tap “Refresh voices”.</p>';return;}
+  const cur=currentVoice();
+  box.innerHTML=voices.map((v,i)=>`<label class="vopt ${v===cur?"sel":""}"><input type="radio" name="voice" value="${i}" ${v===cur?"checked":""}><span class="vn"><b>${esc(v.name.replace(/\s*\(.*\)$/,""))}${natural(v)?'<span class="vtag">natural</span>':""}</b><small>${accentOf(v)} English${v.localService===false?" · needs internet":""}</small></span><button class="say" type="button" aria-label="Preview ${esc(v.name)}">▶</button></label>`).join("");
+  box.querySelectorAll(".vopt").forEach((lab,i)=>{
+    lab.querySelector("input").onchange=()=>{store.set("voice",voices[i].name);document.querySelectorAll("[data-vlist]").forEach(fillVoiceList);};
+    lab.querySelector(".say").onclick=ev=>{ev.preventDefault();stopAll();sayLine("Welcome, Young Authors! Today we begin creating a real book.",null,null,voices[i]);};
+  });
+}
+function coachHTML(){
+  return `<div class="coach"><h3>Listening speed</h3>
+   <p class="note" style="margin:0 0 8px">All scripts are read in an American English voice.</p>
+   <div class="speeds" role="group" aria-label="Speaking speed">${RATES.map(r=>`<button type="button" data-rate="${r[0]}" aria-pressed="${r[0]===rate}">${r[1]} ${r[0]}×</button>`).join("")}</div></div>`;
+}
+function wireCoach(root){
+  root.querySelectorAll("[data-vlist]").forEach(fillVoiceList);
+  root.querySelectorAll("[data-rate]").forEach(b=>b.onclick=()=>{rate=b.dataset.rate;store.set("rate",rate);root.querySelectorAll("[data-rate]").forEach(x=>x.setAttribute("aria-pressed",x.dataset.rate===rate));stopAll();sayLine("This is how fast I will speak.",null,null);});
+  root.querySelectorAll("[data-refresh]").forEach(b=>b.onclick=()=>{loadVoices();if(synth&&!voices.length){const u=new SpeechSynthesisUtterance(" ");synth.speak(u);setTimeout(loadVoices,600);}});
+}
+if(synth){loadVoices();synth.onvoiceschanged=loadVoices;setTimeout(loadVoices,800);}
+function stopAll(){if(synth)synth.cancel();if(playing){playing.querySelectorAll("li.on").forEach(l=>l.classList.remove("on"));const b=playing.querySelector(".playall");if(b)b.textContent="▶ Play all";}playing=null;}
+function sayLine(text,li,onend,voice){
+  if(!synth) return;
+  const u=new SpeechSynthesisUtterance(text.replace(/\[|\]/g,""));
+  const v=voice||currentVoice(); if(v){u.voice=v;u.lang=v.lang;}else u.lang="en-US";
+  u.rate=+rate;
+  u.onstart=()=>{li&&li.classList.add("on");};
+  u.onend=u.onerror=()=>{li&&li.classList.remove("on");onend&&onend();};
+  synth.speak(u);
+}
+/* ---------- downloads ---------- */
+let dlNS=null;
+(async()=>{try{if(window.claude&&window.claude.use){dlNS=await window.claude.use("downloads");}}catch(_){dlNS=null;}})();
+async function downloadPdf(file,btn,msg){
+  msg.textContent="";
+  try{
+    const res=await fetch("scripts/"+file); if(!res.ok) throw new Error("fetch");
+    const blob=await res.blob();
+    if(dlNS){ await dlNS.save({filename:file,data:blob}); msg.textContent="Saved. Open the PDF to print it."; return; }
+    if(!window.claude){ const u=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=u; a.download=file; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(u),4000); msg.textContent="Downloaded. Open the PDF to print it."; return; }
+  }catch(e){ if(e&&e.code==="declined"){msg.textContent="Download cancelled.";return;} if(e&&e.code==="rate_limited"){msg.textContent="Please wait a moment and try again.";return;} }
+  if(/tracker/.test(file)){msg.innerHTML=`The download can't start here. <a href="https://drive.google.com/file/d/1GRNr3IGm2tpf3dUHDS-Wsoi64Z4EvWF1/view" target="_blank" rel="noopener">Open the Classroom Tracker in Google Drive</a> instead.`;return;}
+  msg.textContent="The download can't start here. Please open the course in the Claude app or in Chrome or Safari and try again, or email joy@thetinystar.com for the PDF.";
+}
+function scanHTML(S){
+  const step=(n,t,body)=>`<div class="scanstep"><span class="num">${n}</span><div><h3>${t}</h3>${body}</div></div>`;
+  return `<p>${esc(S.intro)}</p>
+   ${step(1,"Fill in the Welcome page",`<p>Each student types their first name, last name, age, book title, most favorite thing, city or town, state and country, then taps <b>Start my book</b>.</p>`)}
+   ${step(2,"Scan the pages",`<div class="gallery" style="grid-template-columns:1fr;margin:8px 0 12px"><figure><button type="button" data-lb="img/scan-team-hand.jpg" data-cap="Scan as a team of two"><img class="portrait" src="img/scan-team-hand.jpg" alt="Two students scanning: one stands on a chair holding the iPhone flat above the table, the other places the page in the center of the table"></button><figcaption>Scan as a team of two: one student on the chair with the iPhone, one student handling the pages.</figcaption></figure></div>
+     <ol class="scanlist">
+      <li><b>Pair up students, two per team.</b> One student stands on a chair next to the table and runs the Tiny Star Scanner app. Standing high keeps enough distance between the camera and the page, so there are no shadows. The other student is in charge of the pages.</li>
+      <li><b>Put the page in the center of the camera.</b> Hold the phone flat, parallel to the page, with no angle. Then the scanner can find the page automatically.</li>
+      <li>Tap <b>Looks good</b>, then <b>Save page</b>.</li>
+      <li>When all 23 pages are saved, tap <b>Read my book</b> and check that every page is there. Then tap <b>Publish</b>.</li>
+      <li><b>More than 23 pages</b> (for example 24 or 25)? First scan the first 23 pages. Then tap <b>My book has an extra page</b> to add the extra page(s), check the book in <b>Read my book</b>, and tap <b>Publish</b>.</li>
+      <li><b>Save in My Device</b> is for parents to use at home.</li>
+     </ol>`)}
+   ${S.video?`<h3 style="margin-top:14px">Watch the demo</h3><video controls playsinline preload="metadata" style="width:100%;max-width:360px;border-radius:14px;background:#000" src="${S.video}"></video>`:""}`;
+}
+function fullScript(L){
+  const parts=L.scripts.map(sc=>`<h4>${esc(sc.title)}</h4><ol>${sc.lines.map(t=>`<li>${esc(t)}</li>`).join("")}</ol>`).join("");
+  const call=L.emails.call?`<h4>Phone call to a parent (when a student is behind)</h4><ol>${L.emails.call.map(t=>`<li>${esc(t)}</li>`).join("")}</ol>`:"";
+  const txt=L.emails.text?`<h4>Text message to a parent</h4><p>${esc(L.emails.text)}</p>`:"";
+  return `<div class="fullscript" id="script-${L.id}"><div class="fs-head"><p class="eyebrow" style="margin:0">${esc(L.eyebrow)}</p><h3>${esc(L.title)}: full script</h3><p class="note" style="margin:4px 0 0">${esc(L.objective)}${L.goalTotals?" Goal: "+esc(L.goalTotals)+".":""}</p></div>${parts}${call}${txt}${dlHTML(L)}</div>`;
+}
+function dlHTML(L){
+  const f=L.id==="before"?"before-program-scripts.pdf":`lesson-${L.label}-scripts.pdf`;
+  return `<div class="dl"><button class="btn gold" type="button" data-dl="${f}">⬇ Download this lesson's scripts (PDF)</button><button class="btn ghost" type="button" data-dl="all-lesson-scripts.pdf">⬇ All lessons (PDF)</button></div><p class="note" data-dlmsg>Print it and practice on your own. Each line is numbered, with boxes to tick each time you practice.</p>`;
+}
+function playAll(box){
+  if(playing===box){stopAll();return;}
+  stopAll(); playing=box; box.querySelector(".playall").textContent="■ Stop";
+  const lis=[...box.querySelectorAll("li")]; let i=0;
+  const next=()=>{ if(playing!==box) return; if(i>=lis.length){stopAll();return;} const li=lis[i++]; li.scrollIntoView({block:"nearest",behavior:"smooth"}); sayLine(li.dataset.text,li,next); };
+  next();
+}
+
+/* ---------- builders ---------- */
+const sec=(n,id,title,html)=>`<section class="block" id="${id}"><div class="sechead"><span class="num">${n}</span><h2>${title}</h2></div><div class="prose">${html}</div></section>`;
+const scriptBox=(s,key)=>`<div class="script" data-key="${key}"><header><h3>${esc(s.title)}</h3><button class="btn sm gold playall" type="button">▶ Play all</button></header><ol>${s.lines.map(t=>`<li data-text="${esc(t)}"><button class="say" type="button" aria-label="Listen to this line">▶</button><span>${esc(t)}</span></li>`).join("")}</ol></div>`;
+function emailBox(e,tag,key){
+  return `<div class="email"><header><h3>${esc(e.title)}</h3><span style="display:flex;gap:8px;align-items:center">${tag||""}<button class="btn sm copy" type="button" data-copy="${key}">Copy email</button></span></header>
+  ${e.when?`<p class="when">${esc(e.when)}</p>`:""}<p class="subj">Subject: ${esc(e.subject)}</p><pre>${esc(e.body)}</pre></div>`;
+}
+const COPY={};
+function links(L){
+  const v=(L.videos||[]).map(k=>VID[k]).filter(Boolean).map(x=>x[1].startsWith("video/")?`<li class="vidinline"><p style="margin:0 0 6px;font-weight:700">${esc(x[0])}</p><video controls playsinline preload="metadata" src="${x[1]}" style="width:100%;max-width:300px;border-radius:12px;background:#000"></video></li>`:`<li><a href="${x[1]}" target="_blank" rel="noopener"><span class="kind">Video</span><span>${esc(x[0])}</span></a></li>`);
+  const d=[].map(k=>DOCS[k]).filter(Boolean).map(x=>x[1].startsWith("scripts/")?`<li><button type="button" class="resbtn" data-dl="${x[1].slice(8)}" data-msg="resmsg"><span class="kind">PDF</span><span>⬇ ${esc(x[0])}</span></button></li>`:`<li><a href="${x[1]}" target="_blank" rel="noopener"><span class="kind">File</span><span>${esc(x[0])}</span></a></li>`);
+  return `<ul class="res">${v.join("")}${d.join("")}</ul>`;
+}
+
+const TOCL=L=>{const t=[["plan","Lesson Plan"],["goal",(L.id==="before"?"Prep Week":"Week "+L.label)+" Goal"],["slides","Classroom Slides"]];if(L.scan)t.push(["scan","Teach Students to Scan and Submit to Publish"]);t.push(["say","Say it in English"],["tracker","Fill the Classroom Tracker"],["emails","Communicate with Parents (email + text)"]);return t;};
+const TOC=L=>TOCL(L).map(x=>x[1]);
+const NUM=(L,id)=>TOCL(L).findIndex(x=>x[0]===id)+1;
+const TT=(L,id)=>TOCL(L).find(x=>x[0]===id)[1];
+function lessonHTML(L){
+  let h=`<p class="eyebrow">${esc(L.eyebrow)}</p><h1>${esc(L.title)}</h1><p class="lede">${esc(L.objective)}</p>
+  <nav class="toc" aria-label="On this page">${TOCL(L).map((t,i)=>`<a href="#" data-jump="${t[0]}">${i+1}. ${esc(t[1])}</a>`).join("")}</nav>`;
+
+  /* 1 plan */
+  let plan=`<dl class="kv"><dt>Objective</dt><dd>${esc(L.objective)}</dd>${L.collects?`<dt>Teacher collects</dt><dd>${esc(L.collects)}</dd>`:""}</dl>
+   <div class="tablewrap"><table><thead><tr><th>${L.id==="before"?"When":"Time"}</th><th>${L.id==="before"?"What to do":"Activity"}</th></tr></thead><tbody>${L.flow.map(f=>`<tr><td class="t">${esc(f[0])}</td><td>${esc(f[1])}</td></tr>`).join("")}</tbody></table></div>`;
+  if(L.id!=="before") plan+=`<p class="note">60-minute classes: Welcome + Meditation 5 · Share & Feedback 5 · Lecture 5 · Music Creating 15 · Silent Creating 15 · Free Creating 5 · Organize & Cleanup 10.</p>`;
+  if(L.checklist) plan+=`<h3 style="margin-top:14px">Preparation checklist</h3><ul class="checklist">${L.checklist.map((t,i)=>`<li><label><input type="checkbox" data-key="chk-${L.id}-${i}"><span>${esc(t)}</span></label></li>`).join("")}</ul>`;
+  if((L.videos||[]).length) h+=`<section class="block" id="videos"><h2 style="margin-bottom:10px">Watch the Classroom Videos</h2>${links(L)}<p class="note">Linked videos open in Google Drive. They are Confidential Teaching Material: please don't download or share them.</p></section>`;
+  h+=sec(NUM(L,"plan"),"plan",TT(L,"plan"),plan);
+
+  /* 2 goal */
+  h+=sec(NUM(L,"goal"),"goal",TT(L,"goal"),`<div class="goalcard"><div class="big">${esc(L.id==="before"?"Be fully ready before the first student arrives.":L.objective)}</div><ul>${L.goals.map(g=>`<li>${esc(g)}</li>`).join("")}</ul>${L.goalTotals?`<span class="totals">By the end of this lesson: ${esc(L.goalTotals)}</span>`:""}</div>`
+    + (L.teach?`<div style="margin-top:14px">${L.teach}</div>`:"")
+    + (L.foundations?foundations():""));
+
+  /* 3 slides */
+  h+=sec(NUM(L,"slides"),"slides",TT(L,"slides"),`<p class="note">Tap a slide to enlarge it. Show these slides in class in this order.</p><div class="gallery">${L.slides.map(s=>`<figure><button type="button" data-lb="img/${s[0]}" data-cap="${esc(s[1])}"><img src="img/${s[0]}" alt="${esc(s[1])}" loading="lazy" ${/minibook|tracker/.test(s[0])?'class="portrait"':""}></button><figcaption>${esc(s[1])}</figcaption></figure>`).join("")}</div>${L.samples?`<h3 style="margin-top:16px">Presenting your book: real student samples</h3><p class="note">Watch how students present their books at the end of the program. This is the level we aim for.</p><ul class="res">${L.samples.map(v=>`<li><a href="${v[1]}" target="_blank" rel="noopener"><span class="kind">Video</span><span>${esc(v[0])}</span></a></li>`).join("")}</ul>`:""}`);
+
+  /* 4 scripts */
+  if(L.scan) h+=sec(NUM(L,"scan"),"scan",TT(L,"scan"),scanHTML(L.scan));
+  h+=sec(NUM(L,"say"),"say",TT(L,"say"),`<p>Listen to each script, then say it aloud with the recording. Tap ▶ on a single line to repeat it, or <b>Play all</b> to hear the whole section.</p>${coachHTML()}${L.scripts.map((s,i)=>scriptBox(s,L.id+"-"+i)).join("")}${fullScript(L)}`);
+
+  /* 5 tracker */
+  const T=L.tracker; let tr="";
+  if(L.id==="before"){
+    tr=`<p>${esc(T.intro)}</p><div class="row" style="margin:0 0 6px"><button class="btn sm" type="button" data-dl="classroom-tracker-with-goals.pdf" data-msg="trkmsg">⬇ Download the Classroom Tracker to print (PDF)</button></div><p class="note" id="trkmsg">The tracker shows each week's goal at the top of every lesson column.</p><div class="gallery"><figure><button type="button" data-lb="img/tracker-1.jpg" data-cap="Classroom Tracker 2-1 (Lessons 1–4)"><img class="portrait" src="img/tracker-1.jpg" alt="Classroom Tracker form 2-1"></button><figcaption>Tracker 2-1: Lessons 1–4</figcaption></figure><figure><button type="button" data-lb="img/tracker-2.jpg" data-cap="Classroom Tracker 2-2 (Lessons 5–8)"><img class="portrait" src="img/tracker-2.jpg" alt="Classroom Tracker form 2-2"></button><figcaption>Tracker 2-2: Lessons 5–8</figcaption></figure></div>
+    <h3 style="margin-top:12px">How to fill it in, every class</h3><ol>${T.howto.map(x=>`<li>${esc(x)}</li>`).join("")}</ol>
+    <h3>How to write it</h3><div class="legend">${T.legend.map(x=>`<span><code>${esc(x[0])}</code> ${esc(x[1])}</span>`).join("")}</div>`;
+  } else {
+    const tp=+L.label<=4?["tracker-1.jpg","Classroom Tracker 2-1 (Lessons 1–4)"]:["tracker-2.jpg","Classroom Tracker 2-2 (Lessons 5–8)"];
+    tr=`<div class="row" style="margin:0 0 6px"><button class="btn sm" type="button" data-dl="classroom-tracker-with-goals.pdf" data-msg="trkmsg">⬇ Download the Classroom Tracker to print (PDF)</button></div><p class="note" id="trkmsg">The tracker shows each week's goal at the top of every lesson column.</p>
+    <div class="gallery" style="margin-bottom:12px"><figure><button type="button" data-lb="img/${tp[0]}" data-cap="${tp[1]}"><img class="portrait" src="img/${tp[0]}" alt="${tp[1]}"></button><figcaption>${tp[1]}: fill in the Lesson ${L.label} column. The goal is printed at the top.</figcaption></figure></div>
+    <p><b>Today's tracker goal:</b> ${esc(T.goal)}. During Creating with Music 2, check every student's pages, fill in the cell for this lesson, and take one progress photo per student.</p>
+    ${L.photo?`<div class="photocall"><img src="img/${L.photo[0]}" alt="A student smiling at her table with her finished book pages" loading="lazy"><div><h3>Reminder: take a photo of every student</h3><p>${esc(L.photo[1])}</p><p class="note">Use one photo per student, in a folder with the student's first name. Upload the photos within 24 hours. Families love these, and they record each student's progress.</p></div></div>`:""}
+    <h3>Example: end of Lesson ${L.label}</h3><div class="trkex">${T.example.map(r=>{const st=(T.practice.students.find(x=>x[0]===r[0])||[])[1]||"";const need=r[1]!=="✓",fu=r[2]&&r[2]!=="—";return `<div class="trkrow ${need?"need":""}"><div class="trkhead"><b>${esc(r[0])}</b><span class="trkcell">${esc(r[1])}</span></div><p>${esc(st)}</p>${fu?`<p class="trkfu" style="${need?"":"color:var(--good)"}">Follow-up: ${esc(r[2])}</p>`:""}</div>`;}).join("")}</div>
+    <div class="callout"><b>Who needs a personal email plus a call or text?</b> ${esc(T.practice.why)}</div>`;
+  }
+  h+=sec(NUM(L,"tracker"),"tracker",TT(L,"tracker"),tr);
+
+  /* 6 emails */
+  const E=L.emails; let em="";
+  COPY[L.id+"-std"]="Subject: "+E.standard.subject+"\n\n"+E.standard.body;
+  em+=`<p><b>Step 1, everyone:</b> send the standard weekly email to all families (use your class's Google Contacts group). Update the school, dates and links; keep the goals and reminders unchanged.</p>`+emailBox(E.standard,`<span class="tag">All families</span>`,L.id+"-std");
+  if(L.id!=="before") em+=`<p style="margin-top:16px"><b>Step 2, students who missed the goal:</b> for every student you circled on the tracker, send a personal email to that family only, then call or text the parent. Start with something positive, describe the facts, say what you already did in class, and give one simple way to help at home.</p>`;
+  E.personal.forEach((p,i)=>{const k=L.id+"-p"+i;COPY[k]="Subject: "+p.subject+"\n\n"+p.body;em+=emailBox(p,`<span class="tag red">One family</span>`,k);});
+  if(E.text){COPY[L.id+"-txt"]=E.text;em+=`<div class="email"><header><h3>Text message to the parent</h3><button class="btn sm copy" type="button" data-copy="${L.id}-txt">Copy text</button></header><pre>${esc(E.text)}</pre></div>`;}
+  if(E.call) em+=scriptBox({title:"Phone call script (listen and practice)",lines:E.call},L.id+"-call");
+  h+=sec(NUM(L,"emails"),"emails",TT(L,"emails"),em);
+
+  return h;
+}
+function foundations(){
+  return `<h3 style="margin-top:16px">Tiny Star foundations</h3>
+  <div class="grid2">
+   <div class="mini"><h3>Mission & 4C Method</h3><p>Raise a generation of confident creators through <b>Creativity, Communication, Confidence and Creator Identity</b>. Ages 6–12 are Erikson's “Industry vs. Inferiority” stage: children build confidence by finishing real, meaningful work.</p></div>
+   <div class="mini"><h3>Your role</h3><p>Coach, don't lecture. Encourage, don't criticize. Protect each child's originality. Communicate early with families. Your name is on every book's copyright page.</p></div>
+   <div class="mini"><h3>Attention & praise</h3><p>Never shout: use a raised hand, 5-4-3-2-1, or “Tiny…” / “Star!”. Praise specific effort, and say why each sticker was earned (six sticker types).</p></div>
+   <div class="mini"><h3>Behavior steps</h3><p>Quiet reminder → private talk → seat change → document → tracker → parent email within 24 hours. Facts only, never labels.</p></div>
+   <div class="mini"><h3>Seating</h3><p>Groups of 3–4 with mixed personalities. Change groups when one member keeps making noise.</p></div>
+   <div class="mini"><h3>Safety</h3><p>Release students only to authorized caregivers. If unsure, keep the student with you and go to the school's front desk office. Emergencies: Tiny Star Office 857-832-8338.</p></div>
+  </div>`;
+}
+
+const EXAM_PASS=Math.ceil(QS.length*0.8);
+const ORDER=QS.map((q,i)=>{let s=(i+7)*2654435761>>>0;const a=q[1].map((_,j)=>j);for(let k=a.length-1;k>0;k--){s=(Math.imul(s,1103515245)+12345)>>>0;const r=s%(k+1);[a[k],a[r]]=[a[r],a[k]];}return a;});
+function examHTML(){
+  return `<p class="eyebrow">Final step</p><h1>Final exam</h1><p class="lede">${QS.length} questions about all eight lessons, the Classroom Tracker and parent emails. You pass with ${EXAM_PASS} correct (80%). You can retake it as often as you need.</p>
+  <section class="block"><h2>Your details</h2><div class="prose"><div class="field"><label for="cName"><b>Full name</b></label><input id="cName" autocomplete="name"></div><div class="field"><label for="cEmail"><b>Email</b></label><input id="cEmail" type="email" autocomplete="email"></div><p class="note" id="lessonNote"></p></div></section>
+  <section class="block"><h2>Questions</h2><form id="examForm" novalidate>${QS.map((q,i)=>`<div class="q" id="q${i}"><p class="stem">${i+1}. ${esc(q[0])}</p><div class="opts" role="radiogroup" aria-label="Question ${i+1}">${ORDER[i].map(j=>`<label for="a${i}_${j}"><input type="radio" name="a${i}" id="a${i}_${j}" value="${j}"><span>${esc(q[1][j])}</span></label>`).join("")}</div><p class="why hidden" id="why${i}"></p></div>`).join("")}
+  <p class="note" id="examMsg" role="status"></p><div class="row"><button class="btn gold" type="submit">Submit and see my score</button></div></form></section>
+  <section class="block hidden" id="resultBlock" tabindex="-1"><h2>Your score</h2><div id="resultBody"></div></section>`;
+}
+function rcode(s){let h=2166136261;for(const c of s){h^=c.charCodeAt(0);h=Math.imul(h,16777619);}return "TS-"+(h>>>0).toString(36).toUpperCase().slice(0,6);}
+function wireExam(){
+  const form=document.getElementById("examForm"); if(!form) return;
+  const n=document.getElementById("cName"),e=document.getElementById("cEmail");
+  n.value=store.get("cName")||"";e.value=store.get("cEmail")||"";
+  n.oninput=()=>store.set("cName",n.value);e.oninput=()=>store.set("cEmail",e.value);
+  const done=LESSONS.filter(l=>isDone(l.id)).length;
+  document.getElementById("lessonNote").textContent=done<LESSONS.length?`You have completed ${done} of ${LESSONS.length} sections. Finishing all of them first gives you the best chance to pass.`:"All sections complete. You're ready!";
+  form.onsubmit=ev=>{
+    ev.preventDefault(); const msg=document.getElementById("examMsg");
+    if(!n.value.trim()||!e.value.trim()){msg.textContent="Please enter your full name and email at the top before submitting.";n.focus();return;}
+    const ans=QS.map((q,i)=>{const c=form.querySelector(`input[name="a${i}"]:checked`);return c?+c.value:null;});
+    const miss=ans.map((a,i)=>a===null?i+1:null).filter(Boolean);
+    if(miss.length){msg.textContent="Please answer every question. Still unanswered: "+miss.join(", ")+".";document.getElementById("q"+(miss[0]-1)).scrollIntoView({block:"center"});return;}
+    msg.textContent=""; let score=0;
+    QS.forEach((q,i)=>{const ok=ans[i]===q[2];if(ok)score++;form.querySelectorAll(`input[name="a${i}"]`).forEach(inp=>{const j=+inp.value,l=inp.parentElement;l.classList.remove("right","wrong");if(j===q[2])l.classList.add("right");else if(j===ans[i])l.classList.add("wrong");});const w=document.getElementById("why"+i);w.classList.remove("hidden");w.textContent=(ok?"Correct. ":"Not quite. ")+q[3];});
+    const pct=Math.round(score/QS.length*100),pass=score>=EXAM_PASS;
+    const date=new Date().toLocaleDateString("en-US",{year:"numeric",month:"long",day:"numeric"});
+    const code=rcode(n.value.trim().toLowerCase()+"|"+e.value.trim().toLowerCase()+"|"+score+"|"+date);
+    if(pass){markDone("exam");}
+    const summary0=`Tiny Star Teacher Training — Final Exam Result\nName: ${n.value.trim()}\nEmail: ${e.value.trim()}\nScore: ${score}/${QS.length} (${pct}%) — ${pass?"PASSED":"Not yet passed"}\nSections completed: ${LESSONS.filter(l=>isDone(l.id)).length}/${LESSONS.length}\nDate: ${date}\nResult code: ${code}`;const summary=summary0;if(pass)store.set("lastResult",summary0);store.set("cName",n.value.trim());store.set("cEmail",e.value.trim());report("exam",{score:score+"/"+QS.length,percent:pct,result:pass?"PASSED":"Not yet passed",sections:LESSONS.filter(l=>isDone(l.id)).length+"/"+LESSONS.length,code});
+    document.getElementById("resultBody").innerHTML=`<div class="scorecard"><div class="bignum">${score}/${QS.length}</div><div><span class="pill ${pass?"pass":"fail"}">${pass?"Passed":"Not yet passed"}</span><p style="margin:.5em 0 0">${pct}% · pass mark ${EXAM_PASS} correct (80%)</p></div></div>
+     ${pass?`<div class="prose"><h3 style="margin-top:16px">Next step: your demo teaching</h3><p>Congratulations! Your last step is <b>Come to Our Classroom</b>: book your 30-minute teaching demo. <a href="#demo">Book my demo →</a></p><p><b>Prepare for your demo:</b> lead the Young Author Meditation and the four rules, teach the 3 Acts Method with your own sample story (with a lively Try, Try, Try), and guide the class through WHO and WHEN with small pieces of guidance.</p></div>`:`<div class="prose"><p style="margin-top:16px">Review the explanations under each question, revisit those lessons, and try again when you're ready.</p></div>`}
+     <div class="resultbox">${esc(summary)}</div>
+     <div class="row"><button class="btn" type="button" id="copyRes">Copy my result</button><a class="btn ghost" style="text-decoration:none" href="mailto:joy@thetinystar.com?subject=${encodeURIComponent("Demo Teaching Request – "+n.value.trim())}&body=${encodeURIComponent(summary)}">Open in my email app</a><button class="btn ghost" type="button" id="retake">Retake the exam</button></div>
+     <p class="note" id="copyMsg" role="status">If the email button doesn't open your email app, copy the result and send it to joy@thetinystar.com.</p>`;
+    const blk=document.getElementById("resultBlock");blk.classList.remove("hidden");blk.focus();blk.scrollIntoView();
+    document.getElementById("copyRes").onclick=async()=>{const m=document.getElementById("copyMsg");try{await navigator.clipboard.writeText(summary);m.textContent="Copied. Paste it into an email to joy@thetinystar.com.";}catch(_){m.textContent="Copy isn't available here. Select the result text above and copy it.";}};
+    document.getElementById("retake").onclick=()=>{form.reset();form.querySelectorAll(".opts label").forEach(l=>l.classList.remove("right","wrong"));form.querySelectorAll(".why").forEach(w=>w.classList.add("hidden"));blk.classList.add("hidden");window.scrollTo(0,0);};
+    renderNav();
+  };
+}
+
+/* ---------- render ---------- */
+const current=()=>{const h=location.hash.slice(1);return PAGES.find(p=>p.id===h)||PAGES[0];};
+function renderNav(){
+  const cur=current();
+  document.getElementById("steps").innerHTML=PAGES.map(p=>`<li class="${isDone(p.id)?"done":""}"><a href="#${p.id}" ${p===cur?'aria-current="page"':""}><span class="dot">${p.label}</span><span>${esc(p.nav)}</span></a></li>`).join("");
+  document.getElementById("pick").innerHTML=PAGES.map(p=>`<option value="${p.id}" ${p===cur?"selected":""}>${isDone(p.id)?"✓ ":""}${esc(p.nav)}</option>`).join("");
+  const n=STEPS.filter(p=>isDone(p.id)).length;
+  document.getElementById("meterBar").style.width=(n/STEPS.length*100)+"%";
+  document.getElementById("meterLabel").textContent=`${n} of ${STEPS.length} steps complete`;
+}
+function render(){
+  stopAll();
+  const p=current(),i=PAGES.indexOf(p),prev=PAGES[i-1],next=PAGES[i+1];
+  const L=LESSONS.find(l=>l.id===p.id);
+  if(!isRegistered()){const m0=document.getElementById("main");m0.innerHTML=registerHTML();wireRegister();renderNav();m0.focus({preventScroll:true});return;}
+  let h=L?lessonHTML(L):p.id==="menu"?menuHTML():p.id==="demo"?demoHTML():examHTML();
+  if(L||p.id==="demo") h+=`<div class="row"><button class="btn ${isDone(p.id)?"ghost":"gold"}" type="button" id="doneBtn">${isDone(p.id)?"Marked complete · undo":(p.id==="demo"?"I've booked my demo":"Mark this lesson complete")}</button></div>`;
+  h+=`<nav class="navrow" aria-label="Lesson navigation">${prev?`<a href="#${prev.id}">← ${esc(prev.nav)}</a>`:"<span></span>"}${next?`<a href="#${next.id}">${esc(next.nav)} →</a>`:""}</nav>`;
+  const m=document.getElementById("main");m.innerHTML=h;
+  m.querySelectorAll("[data-key]").forEach(cb=>{if(cb.type!=="checkbox")return;cb.checked=store.get(cb.dataset.key)==="1";cb.onchange=()=>store.set(cb.dataset.key,cb.checked?"1":"0");});
+  m.querySelectorAll("[data-jump]").forEach(a=>a.onclick=ev=>{ev.preventDefault();document.getElementById(a.dataset.jump).scrollIntoView({behavior:"smooth"});});
+  wireCoach(m);
+  m.querySelectorAll("[data-dl]").forEach(b=>b.onclick=()=>downloadPdf(b.dataset.dl,b,(b.dataset.msg&&document.getElementById(b.dataset.msg))||m.querySelector("[data-dlmsg]")));
+  m.querySelectorAll(".script").forEach(box=>{box.querySelector(".playall").onclick=()=>playAll(box);box.querySelectorAll("li").forEach(li=>li.querySelector(".say").onclick=()=>{stopAll();sayLine(li.dataset.text,li);});});
+  m.querySelectorAll(".copy").forEach(b=>b.onclick=async()=>{try{await navigator.clipboard.writeText(COPY[b.dataset.copy]);b.textContent="Copied ✓";}catch(_){b.textContent="Select & copy manually";}setTimeout(()=>b.textContent=b.dataset.copy.endsWith("txt")?"Copy text":"Copy email",2200);});
+  m.querySelectorAll("[data-lb]").forEach(b=>b.onclick=()=>{const d=document.getElementById("lb");document.getElementById("lbImg").src=b.dataset.lb;document.getElementById("lbImg").alt=b.dataset.cap;document.getElementById("lbCap").textContent=b.dataset.cap+" (tap outside to close)";try{d.showModal();}catch(_){d.setAttribute("open","");}});
+  m.querySelectorAll(".practice").forEach(pr=>pr.querySelector(".checkp").onclick=()=>{
+    const Lx=LESSONS.find(l=>l.id===pr.dataset.practice); let allRight=true;
+    pr.querySelectorAll("label").forEach(lab=>{const need=lab.dataset.need==="1",ch=lab.querySelector("input").checked;lab.classList.remove("right","wrong");if(need===ch){if(need)lab.classList.add("right");}else{lab.classList.add("wrong");allRight=false;}});
+    const w=pr.querySelector(".why");w.classList.remove("hidden");w.textContent=(allRight?"Exactly right. ":"Not quite. Green marks the students who need a follow-up. ")+Lx.tracker.practice.why;
+  });
+  const b=document.getElementById("doneBtn");
+  if(b) b.onclick=()=>{const was=isDone(p.id);markDone(p.id,!was);if(!was&&next)location.hash=next.id;else render();};
+  wireExam(); renderNav(); m.focus({preventScroll:true});
+}
+document.getElementById("lb").addEventListener("click",e=>{e.currentTarget.close?e.currentTarget.close():e.currentTarget.removeAttribute("open");});
+document.getElementById("pick").onchange=e=>location.hash=e.target.value;
+window.addEventListener("hashchange",()=>{render();window.scrollTo(0,0);});
+render();
+</script>
+</body>
+</html>
