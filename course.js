@@ -97,7 +97,7 @@ const LESSONS = [
     "Collect your Tiny Star suitcase and apron; check stickers, pencils, markers, erasers, name cards, notepad paper.",
     "Contact joy@thetinystar.com to receive your Teaching Suitcase with all the teaching materials.",
     "Get the authorized caregiver list for pickup.",
-    "Log in to the Tiny Star App; practice check-in, check-out and uploading.",
+    "Log in to the Tiny Star App and practice check-in and check-out. Try the Tiny Star Scanner so you can show students how to scan and submit their pages.",
     "Write your own sample story (3 Acts + Try, Try, Try). You will perform it in Lesson 1.",
     "Save the Tiny Star Office contact: 857-832-8338 · joy@thetinystar.com"
   ],
@@ -529,7 +529,7 @@ const LESSONS = [
         ["Noah", "8 pages.", true],
         ["Zoe", "9 pages; the full title page has a page number written on it.", true]
       ],
-      why: "Noah is 3 behind and Zoe is 2 behind. Ask Zoe to remove the page number from her full title page before uploading. Leo deserves a quick positive note home: celebrate progress too!"
+      why: "Noah is 3 behind and Zoe is 2 behind. Ask Zoe to remove the page number from her full title page before she scans it. Leo deserves a quick positive note home: celebrate progress too!"
     }
   },
   emails: {
@@ -610,7 +610,7 @@ const LESSONS = [
         ["Noah", "12 pages.", true],
         ["Zoe", "15 pages.", false]
       ],
-      why: "Leo and Noah are behind the 15-page goal. Leo's cover also isn't finished: it must be fully colored before upload."
+      why: "Leo and Noah are behind the 15-page goal. Leo's cover also isn't finished: it must be fully colored before he scans it."
     }
   },
   emails: {
@@ -815,7 +815,7 @@ const LESSONS = [
     ["10 min", "Reflection, group photo & cleanup"]
   ],
   goals: [
-    "Every student has all 23 pages: 18 story pages + 5 special pages, checked and uploaded.",
+    "Every student has all 23 pages: 18 story pages + 5 special pages, checked by the teacher, then scanned and submitted by the student.",
     "Every student completes the Publishing and After Publishing Form: title, full name, a 3–4 sentence description, 7 keywords, price (suggested $12.99), and author copies.",
     "Every student presents and records a 30-second pitch using the public speaking chant (FHBESV)."
   ],
@@ -839,7 +839,7 @@ const LESSONS = [
     { title: "Sample pitch (model it for students)", lines: ["Hello, everyone! My name is Mia, and I am the author of The Penguin Who Really Traveled.", "My book is about a little penguin who wants to see the world, but every boat leaves without him.", "I wrote this story because I love penguins, and I want kids to know that you should never give up.", "I hope you enjoy reading my book! You can find it on Amazon. Thank you!"] },
     { title: "Closing celebration", lines: ["Congratulations, everyone! You did it! You have completed your very own book. You should be so proud of yourselves.", "Here's what will happen next.", "One: our Tiny Star publishing team will professionally format your book.", "Two: we will email the formatted book to your parents for proofreading and final approval. Please remind your parents to check their email.", "Three: after your family approves, your book will be published. This usually takes about ten days.", "Four: about ten days after your book is published, you'll receive your very own author copy.", "Let's give ourselves a big round of applause, because today we celebrate our newest Tiny Star Young Authors!"] }
   ],
-  teach: `<p>Check and edit each pitch draft. Record each student's final pitch video in a quiet corner. Note any student who has not completed all 23 pages. After the quality check, upload the pages and click <b>Send Proofreading Link</b> in the Tiny Star App for every finished book. End with a group photo.</p>`,
+  teach: `<p>Check and edit each pitch draft. Record each student's final pitch video in a quiet corner. Note any student who has not completed all 23 pages. After the quality check, each student scans and submits their own pages with the Tiny Star Scanner (parents can help at home). Then click <b>Send Proofreading Link</b> in the Tiny Star App for every finished book. End with a group photo.</p>`,
   tracker: {
     goal: "All 23 pages + publishing form + pitch video",
     example: [
@@ -922,8 +922,8 @@ const QS = [
 ["A student says, “I don't know what to write.” What should you do?",["Give them a story idea","Write the first page for them","Ask guiding questions; if still stuck, offer two choices","Tell them to copy a classmate"],2,"The child chooses and still owns the story."],
 ["Which of these should a parent email NEVER do?",["Begin with something positive","Describe observable behavior","Address two families in one email, or label a child “lazy”","Explain the support you already gave"],2,"One family per email; no labels or assumptions."],
 ["A student's story uses characters from a famous cartoon. What do you tell the family?",["The book must be thrown away","The student keeps the story idea but creates original characters, names and world, because protected characters can't be published","It's fine to publish","Change to a new story from scratch"],1,"Keep the structure, make the characters original."],
-["When should you upload approved student pages to the Tiny Star App?",["Only after the final lesson","After every class","Once a month","Only when parents ask"],1,"Weekly uploads let the publishing team catch problems early."],
-["Which page is NOT ready to upload?",["Fully colored, page number written","Neat writing, no more than 7 words per line","Pencil sketch lines still showing","Spelling checked"],2,"Erase all pencil lines first."],
+["Who scans and submits the finished book pages to Tiny Star?",["The teacher, after every class","The student, with help from parents, using the Tiny Star Scanner","The publishing team, at the end of the program","Only the parents who ask"],1,"Teachers check the pages and teach students how to scan. Students and their parents scan and submit the pages with the Tiny Star Scanner."],
+["Which page is NOT ready to scan and submit?",["Fully colored, page number written","Neat writing, no more than 7 words per line","Pencil sketch lines still showing","Spelling checked"],2,"Erase all pencil lines first."],
 ["The person picking up a student is not on your caregiver list. What do you do?",["Release the student if the person seems friendly","Keep the student with you and take them to the school's front desk office","Let the student walk home","Ask the student"],1,"Release students only to authorized caregivers."],
 ["A student hasn't finished the book by the end of Lesson 8. What is the deadline you share with the family?",["No deadline","Submit the complete manuscript within 15 days","Next school year","Within 24 hours"],1,"Families have 15 days, with a reminder on Day 7."],
 ["What are the parts of the Tiny Star Public Speaking Chant?",["Feet still, Hands in place, Back straight, Eyes on the audience, Big smile, Clear voice and pause","Fast, Happy, Bold, Excited, Smart, Victorious","Face, Hands, Book, Eyes, Song, Voice","Focus, Hope, Believe, Explain, Share, Visit"],0,"FHBESV: and pause, pause, pause!"]
