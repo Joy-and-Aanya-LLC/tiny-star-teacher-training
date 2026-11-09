@@ -218,7 +218,7 @@ const store={get(k){try{return localStorage.getItem("ts2-"+k);}catch(_){return m
 const isDone=id=>store.get("done-"+id)==="1";
 const markDone=(id,v=true)=>{store.set("done-"+id,v?"1":"0");if(v){const pg=PAGES.find(x=>x.id===id);report("progress",{lesson:pg?pg.nav:id});}};
 /* ---------- registration + reporting to Tiny Star's Google Sheet ---------- */
-const SHEET_URL="";
+const SHEET_URL="https://script.google.com/macros/s/AKfycbwEgCBwiSpZYHLw9rxSFTZ_ZcKpUKcRxtfqbWaGhFxfDbMSDVqpEYsnUoqHGoQhb2pX/exec";
 function report(type,data){
   if(!SHEET_URL) return;
   const body=JSON.stringify(Object.assign({type,name:store.get("cName")||"",email:store.get("cEmail")||"",phone:store.get("cPhone")||"",city:store.get("cCity")||"",time:new Date().toISOString()},data||{}));
